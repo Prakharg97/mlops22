@@ -1,0 +1,1 @@
+{'svm': [{'accuracy_score': 0.9888268156424581, 'macro_f1': 0.9883333333333333}]}models saved at ./models/svm_gamma=0.001_C=0.7.joblib

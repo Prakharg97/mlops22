@@ -105,3 +105,34 @@ def test_predict_all_classes():
 
     classes = set(pred)
     assert ground_truth_labels == classes  # classes.issubset(ground_truth_labels) == True
+
+
+def test_train_dev_split_equal():
+
+    h_param_comb = helper_h_params()
+    x_train, y_train = helper_create_bin_data(n=100, d=7)
+
+    x_train1, y_train1, x_dev1, y_dev1, x_test1, y_test1 = train_dev_test_split(
+        x_train, y_train, 0.8, .1, 10
+    )
+
+    a_train, b_train, a_dev, b_dev, a_test, b_test = train_dev_test_split(
+        x_train, y_train, 0.8, .1, 10
+    )
+    print(np.array_equal(x_train1, a_train))
+    assert np.array_equal(x_train1, a_train)
+  
+def test_train_dev_split_unequal():
+
+    h_param_comb = helper_h_params()
+    x_train, y_train = helper_create_bin_data(n=100, d=7)
+
+    x_train1, y_train1, x_dev1, y_dev1, x_test1, y_test1 = train_dev_test_split(
+        x_train, y_train, 0.8, .1, 10
+    )
+
+    a_train, b_train, a_dev, b_dev, a_test, b_test = train_dev_test_split(
+        x_train, y_train, 0.8, .1, 11
+    )
+
+    assert np.array_equal(x_train1, a_train)

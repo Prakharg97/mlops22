@@ -1,5 +1,6 @@
 from sklearn import datasets, svm, metrics, tree
 import pdb
+import argparse
 
 from utils import (
     preprocess_digits,
@@ -13,6 +14,16 @@ from joblib import dump, load
 
 train_frac, dev_frac, test_frac = 0.8, 0.1, 0.1
 assert train_frac + dev_frac + test_frac == 1.0
+
+
+parser = argparse.ArgumentParser(prog = 'plot-graph')
+parser.add_argument("--clf_name")
+parser.add_argument("--random_state")
+parser.add_argument('-v', '--verbose',action='store_true')
+args = parser.parse_args()
+print(args.clf_name, args.random_state)
+clf_name = args.clf_name
+random_state = args.random_state
 
 # 1. set the ranges of hyper parameters
 gamma_list = [0.01, 0.005, 0.001, 0.0005, 0.0001]
@@ -42,23 +53,23 @@ del digits
 metric_list = [metrics.accuracy_score, macro_f1]
 h_metric = metrics.accuracy_score
 
-n_cv = 5
+n_cv = 1
 results = {}
 for n in range(n_cv):
     x_train, y_train, x_dev, y_dev, x_test, y_test = train_dev_test_split(
-        data, label, train_frac, dev_frac
+        data, label, train_frac, dev_frac, int(random_state)
     )
     # PART: Define the model
     # Create a classifier: a support vector classifier
-    models_of_choice = {
-        "svm": svm.SVC(),
-        "decision_tree": tree.DecisionTreeClassifier(),
-    }
+    if clf_name == 'svm':
+        models_of_choice = {"svm": svm.SVC()}
+    elif clf_name == 'tree':
+        models_of_choice = {"decision_tree": tree.DecisionTreeClassifier()}
     for clf_name in models_of_choice:
         clf = models_of_choice[clf_name]
         print("[{}] Running hyper param tuning for {}".format(n,clf_name))
         actual_model_path = tune_and_save(
-            clf, x_train, y_train, x_dev, y_dev, h_metric, h_param_comb[clf_name], model_path=None
+            clf, x_train, y_train, x_dev, y_dev, h_metric, h_param_comb[clf_name], model_path='models/'
         )
 
         # 2. load the best_model
@@ -79,3 +90,11 @@ for n in range(n_cv):
         )
 
 print(results)
+file = open("results/"+clf_name+"_"+str(random_state)+".txt", "w")
+accuracy = results[str(args.clf_name)][0]['accuracy_score']
+macro = results[str(args.clf_name)][0]['macro_f1']
+file.write("test accuracy:"+str(accuracy)+"\n")
+file.write("test macro-f1:"+str(macro)+"\n")
+file.write("models saved at ./"+actual_model_path)
+file.close()
+file.close()
